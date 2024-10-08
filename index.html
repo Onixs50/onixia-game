@@ -498,7 +498,7 @@ async function play() {
         // Show loading screen with random loading image
         const loadingImages = ['https://raw.githubusercontent.com/Onixs50/onixia-game/main/loading1.png', 'https://raw.githubusercontent.com/Onixs50/onixia-game/main/loading.png'];
         const randomLoadingImage = loadingImages[Math.floor(Math.random() * loadingImages.length)];
-        document.getElementById('loadingImage').src = `http://5.83.147.121/${randomLoadingImage}`;
+        document.getElementById('loadingImage').src = randomLoadingImage;
         document.getElementById('loadingModal').style.display = 'flex';
 
         const tx = await contract.playWithWBERA();
@@ -526,7 +526,7 @@ function showRandomResult() {
         // Winner outcomes
         const winningImages = ['https://raw.githubusercontent.com/Onixs50/onixia-game/main/nft.png', 'https://raw.githubusercontent.com/Onixs50/onixia-game/main/token.png'];
         const randomWinningImage = winningImages[Math.floor(Math.random() * winningImages.length)];
-        resultImage.src = `http://5.83.147.121/${randomWinningImage}`;
+        resultImage.src = randomWinningImage;
         
         if (randomWinningImage === 'https://raw.githubusercontent.com/Onixs50/onixia-game/main/nft.png') {
             resultText.textContent = 'Congratulations! You won an NFT! 🎉';
@@ -537,7 +537,7 @@ function showRandomResult() {
         // New losing outcomes
         const losingImages = ['https://raw.githubusercontent.com/Onixs50/onixia-game/main/win1.png', 'https://raw.githubusercontent.com/Onixs50/onixia-game/main/win2.png', 'https://raw.githubusercontent.com/Onixs50/onixia-game/main/win3.png', 'https://raw.githubusercontent.com/Onixs50/onixia-game/main/win4.png'];
         const randomLosingImage = losingImages[Math.floor(Math.random() * losingImages.length)];
-        resultImage.src = `http://5.83.147.121/${randomLosingImage}`;
+        resultImage.src = randomWinningImage;
         resultText.textContent = 'Unfortunately, you didn\'t win this time. Better luck next try! 😢';
     }
     
