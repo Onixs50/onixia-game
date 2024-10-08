@@ -328,7 +328,7 @@
 <body>
     <div class="container">
         <h1 class="game-title">Onixia Game</h1>
-        <div id="walletStatus" class="wallet-status">Connect Wallet</div>
+        <div id="walletStatus" class="wallet-status" onclick="connectWallet()">Connect Wallet</div>
 
         <div class="token-selection">
             <button class="token-button" data-token="wbera">WBERA (0.001)</button>
@@ -474,11 +474,14 @@ async function approveToken() {
 
 function showInfo() {
     document.getElementById('infoModal').style.display = 'block';
+    console.log('Info Modal Opened');
 }
 
 function closeInfo() {
     document.getElementById('infoModal').style.display = 'none';
+    console.log('Info Modal Closed');
 }
+
 
 async function play() {
     if (!contract) {
