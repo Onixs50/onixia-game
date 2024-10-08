@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onixia Game</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/4.0.1/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.0.0/dist/ethers.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .game-title {
+            color: #ffd700;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .wallet-status {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .wallet-status:hover {
+            background: #45a049;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 300px);
+            min-height: 400px;
+            margin: 20px 0;
+            overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+        }
+
+        .game-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .game-container:hover .game-image {
+            transform: scale(1.05);
+        }
+
+        .token-selection {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .token-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .token-button:hover {
+            background: #2980b9;
+        }
+
+        .token-button.selected {
+            background: #e74c3c;
+        }
+
+        .play-button {
+            background: #2ecc71;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .play-button:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+
+        .play-button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .footer {
+            background: rgba(0,0,0,0.5);
+            padding: 20px;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .social-links a {
+            color: #ffd700;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .social-links a:hover {
+            color: #fff;
+        }
+
+        .approve-section {
+            margin: 20px 0;
+            display: none;
+        }
+
+        .approve-button {
+            background: #f39c12;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .approve-button:hover {
+            background: #d35400;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .play-button:not(:disabled) {
+            animation: pulse 2s infinite;
+        }
+
+        .result-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .result-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 80%;
+            max-height: 80%;
+        }
+
+        .result-image {
+            max-width: 100%;
+            max-height: 60vh;
+            object-fit: contain;
+        }
+
+        .result-text {
+            margin-top: 20px;
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        .close-modal {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background-color: #2980b9;
+        }
+
+        .transaction-failed {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 2em;
+            text-align: center;
+        }
+
+        .info-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ffd700;
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .info-modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+        }
+
+.info-content {
+    background-image: url('http://5.83.147.121/info.png');
+    background-size: cover;
+    background-position: center;
+    width: 80%;
+    max-width: 800px;
+    height: 80vh;
+    margin: 10vh auto;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); 
+    overflow-y: auto;
+    position: relative;
+    color: black;
+}
+        .info-content h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+.info-content p {
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7); 
+    font-size: 14px;
+    line-height: 1.4; 
+}
+
+        .loading-modal {
+            display: none;
+            position: fixed;
+            z-index: 1002;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .loading-image {
+            max-width: 200px;
+            margin-bottom: 20px;
+        }
+
+        .social-icon {
+            font-size: 24px;
+        }
+
+        .info-social-links {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="game-title">Onixia Game</h1>
+        <div id="walletStatus" class="wallet-status">Connect Wallet</div>
+
+        <div class="token-selection">
+            <button class="token-button" data-token="wbera">WBERA (0.001)</button>
+        </div>
+
+        <div class="approve-section" id="approveSection">
+            <button class="approve-button" id="approveButton">Approve Token</button>
+        </div>
+
+        <div class="game-container">
+            <img src="https://ibb.co/HHNbMs3" alt="Onixia Game" class="game-image">
+        </div>
+
+        <button id="playButton" class="play-button" disabled>Play Game</button>
+    </div>
+
+    <button class="info-button" onclick="showInfo()">
+        <i class="fas fa-info-circle"></i>
+        Game Info
+    </button>
+
+    <div class="footer">
+        <p>Designed by Onixia</p>
+        <div class="social-links">
+            <a href="https://github.com/Onixs50/" target="_blank">
+                <i class="fab fa-github social-icon"></i>
+                GitHub
+            </a>
+            <a href="https://x.com/sadeghss50" target="_blank">
+                <i class="fab fa-twitter social-icon"></i>
+                Twitter
+            </a>
+        </div>
+    </div>
+
+    <div id="infoModal" class="info-modal">
+        <div class="info-content">
+            <h2>Welcome to Onixia Game!</h2>
+            <p>This exciting blockchain-based game gives you the chance to win amazing NFTs and tokens. Connect your wallet, approve the token, and test your luck!</p>
+            <p>Each play costs 0.001 WBERA tokens, giving you a chance to win exclusive rewards.</p>
+            <p>Join our community and stay updated with the latest news and announcements.</p>
+            <div class="info-social-links social-links">
+                <a href="https://github.com/Onixs50/" target="_blank">
+                    <i class="fab fa-github social-icon"></i>
+                    GitHub
+                </a>
+                <a href="https://x.com/sadeghss50" target="_blank">
+                    <i class="fab fa-twitter social-icon"></i>
+                    Twitter
+                </a>
+            </div>
+            <button class="close-modal" onclick="closeInfo()">Close</button>
+        </div>
+    </div>
+
+    <div id="loadingModal" class="loading-modal">
+        <div class="loading-content">
+            <img id="loadingImage" class="loading-image" src="" alt="Loading">
+            <p>Processing your transaction...</p>
+        </div>
+    </div>
+
+    <div id="resultModal" class="result-modal">
+        <div class="result-content">
+            <img id="resultImage" class="result-image" src="" alt="Result">
+            <p id="resultText" class="result-text"></p>
+            <button class="close-modal" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <div id="transactionFailed" class="transaction-failed">
+        Transaction Failed!
+    </div>
+
+    <script>
+        const CONTRACT_ADDRESS = '0x1468F3A1bB4ec10e3c77EC14D484D010F5411c22';
+        const WBERA_ADDRESS = '0x7507c1dc16935B82698e4C63f2746A2fCf994dF8';
+        const WBERA_FEE = '1000000000000000';
+
+        let selectedToken = 'wbera';
+        let contract;
+        let signer;
+        let userAddress;
+
+        async function connectWallet() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    console.log('Connecting to wallet...');
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    signer = provider.getSigner();
+                    userAddress = await signer.getAddress();
+                    
+                    document.getElementById('walletStatus').textContent = 
+                        `Connected: ${userAddress.substring(0, 6)}...${userAddress.substring(38)}`;
+                    
+                    contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI, signer);
+                    enableTokenSelection();
+                } catch (error) {
+                    console.error('Error connecting wallet:', error);
+                    alert('Failed to connect wallet. Please check your console for more details.');
+                }
+            } else {
+                alert('Please install MetaMask!');
+            }
+        }
+
+        async function checkAndApprove() {
+            const tokenContract = new ethers.Contract(
+                WBERA_ADDRESS,
+                ['function allowance(address,address) view returns (uint256)',
+                 'function approve(address,uint256) returns (bool)'],
+                signer
+            );
+
+            const allowance = await tokenContract.allowance(userAddress, CONTRACT_ADDRESS);
+            if (allowance.lt(WBERA_FEE)) {
+                document.getElementById('approveSection').style.display = 'block';
+                document.getElementById('playButton').disabled = true;
+            } else {
+                document.getElementById('approveSection').style.display = 'none';
+                document.getElementById('playButton').disabled = false;
+            }
+        }
+
+async function approveToken() {
+    const tokenContract = new ethers.Contract(
+        WBERA_ADDRESS,
+        ['function approve(address,uint256) returns (bool)'],
+        signer
+    );
+
+    try {
+        const tx = await tokenContract.approve(CONTRACT_ADDRESS, ethers.constants.MaxUint256);
+        await tx.wait();
+        document.getElementById('approveSection').style.display = 'none';
+        document.getElementById('playButton').disabled = false;
+    } catch (error) {
+        console.error('Approval error:', error);
+        alert('Error approving token. Please check your console for more details.');
+    }
+}
+
+function showInfo() {
+    document.getElementById('infoModal').style.display = 'block';
+}
+
+function closeInfo() {
+    document.getElementById('infoModal').style.display = 'none';
+}
+
+async function play() {
+    if (!contract) {
+        console.error('Contract not initialized');
+        return;
+    }
+
+    try {
+        // Show loading screen with random loading image
+        const loadingImages = ['loading1.png', 'loading.png'];
+        const randomLoadingImage = loadingImages[Math.floor(Math.random() * loadingImages.length)];
+        document.getElementById('loadingImage').src = `http://5.83.147.121/${randomLoadingImage}`;
+        document.getElementById('loadingModal').style.display = 'flex';
+
+        const tx = await contract.playWithWBERA();
+        await tx.wait();
+        
+        // Hide loading screen
+        document.getElementById('loadingModal').style.display = 'none';
+        
+        showRandomResult();
+    } catch (error) {
+        console.error('Error playing game:', error);
+        document.getElementById('loadingModal').style.display = 'none';
+        showTransactionFailed();
+    }
+}
+
+function showRandomResult() {
+    const resultImage = document.getElementById('resultImage');
+    const resultText = document.getElementById('resultText');
+    
+    // Random chance to win (you can adjust the probability)
+    const isWinner = Math.random() < 0.3; // 30% chance to win
+    
+    if (isWinner) {
+        // Winner outcomes
+        const winningImages = ['nft.png', 'token.png'];
+        const randomWinningImage = winningImages[Math.floor(Math.random() * winningImages.length)];
+        resultImage.src = `http://5.83.147.121/${randomWinningImage}`;
+        
+        if (randomWinningImage === 'nft.png') {
+            resultText.textContent = 'Congratulations! You won an NFT! 🎉';
+        } else {
+            resultText.textContent = 'Congratulations! You won tokens! 💰';
+        }
+    } else {
+        // New losing outcomes
+        const losingImages = ['win1.png', 'win2.png', 'win3.png', 'win4.png'];
+        const randomLosingImage = losingImages[Math.floor(Math.random() * losingImages.length)];
+        resultImage.src = `http://5.83.147.121/${randomLosingImage}`;
+        resultText.textContent = 'Unfortunately, you didn\'t win this time. Better luck next try! 😢';
+    }
+    
+    document.getElementById('resultModal').style.display = 'flex';
+}
+
+function showTransactionFailed() {
+    document.getElementById('transactionFailed').style.display = 'flex';
+    setTimeout(() => {
+        document.getElementById('transactionFailed').style.display = 'none';
+    }, 3000);
+}
+
+function closeModal() {
+    document.getElementById('resultModal').style.display = 'none';
+}
+
+function enableTokenSelection() {
+    document.querySelectorAll('.token-button').forEach(button => {
+        button.classList.add('selected');
+        checkAndApprove();
+    });
+}
+
+document.getElementById('walletStatus').addEventListener('click', connectWallet);
+document.getElementById('approveButton').addEventListener('click', approveToken);
+document.getElementById('playButton').addEventListener('click', play);
+
+const contractABI = [
+    {
+        "inputs": [],
+        "name": "playWithWBERA",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+];
+    </script>
+</body>
+</html>
