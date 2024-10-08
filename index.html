@@ -316,19 +316,27 @@
             margin-bottom: 20px;
         }
 
-        .social-icon {
-            font-size: 24px;
-        }
+.social-icon {
+    font-size: 24px;
+    color: #B7410E; /* رنگ آجری */
+    margin-right: 10px; /* فاصله بین آیکون‌ها */
+}
 
-        .info-social-links {
-            margin-top: 30px;
-        }
+.info-social-links a {
+    color: #B7410E; 
+    text-decoration: none; 
+    transition: color 0.3s ease; 
+}
+
+.info-social-links a:hover {
+    color: darkred; 
+}
     </style>
 </head>
 <body>
     <div class="container">
         <h1 class="game-title">Onixia Game</h1>
-        <div id="walletStatus" class="wallet-status" onclick="connectWallet()">Connect Wallet</div>
+        <div id="walletStatus" class="wallet-status">Connect Wallet</div>
 
         <div class="token-selection">
             <button class="token-button" data-token="wbera">WBERA (0.001)</button>
@@ -339,7 +347,7 @@
         </div>
 
         <div class="game-container">
-            <img src="https://i.ibb.co/VqHzhZ5/val.jpg" alt="Onixia Game" class="game-image">
+            <img src="https://raw.githubusercontent.com/Onixs50/onixia-game/main/val.png" alt="Onixia Game" class="game-image">
         </div>
 
         <button id="playButton" class="play-button" disabled>Play Game</button>
@@ -474,14 +482,11 @@ async function approveToken() {
 
 function showInfo() {
     document.getElementById('infoModal').style.display = 'block';
-    console.log('Info Modal Opened');
 }
 
 function closeInfo() {
     document.getElementById('infoModal').style.display = 'none';
-    console.log('Info Modal Closed');
 }
-
 
 async function play() {
     if (!contract) {
@@ -489,37 +494,26 @@ async function play() {
         return;
     }
 
-async function playGame() {
     try {
         // Show loading screen with random loading image
-        const loadingImages = [
-            'https://raw.githubusercontent.com/Onixs50/onixia-game/main/loading1.png',
-            'https://raw.githubusercontent.com/Onixs50/onixia-game/main/loading.png'
-        ];
+        const loadingImages = ['https://raw.githubusercontent.com/Onixs50/onixia-game/main/loading1.png', 'https://raw.githubusercontent.com/Onixs50/onixia-game/main/loading.png'];
         const randomLoadingImage = loadingImages[Math.floor(Math.random() * loadingImages.length)];
-        document.getElementById('loadingImage').src = randomLoadingImage;
+        document.getElementById('loadingImage').src = `http://5.83.147.121/${randomLoadingImage}`;
         document.getElementById('loadingModal').style.display = 'flex';
 
-        // Interact with contract
         const tx = await contract.playWithWBERA();
         await tx.wait();
         
-        // Hide loading screen after transaction is confirmed
+        // Hide loading screen
         document.getElementById('loadingModal').style.display = 'none';
         
-        // Show the result
         showRandomResult();
     } catch (error) {
         console.error('Error playing game:', error);
-        
-        // Hide loading screen in case of an error
         document.getElementById('loadingModal').style.display = 'none';
-        
-        // Show transaction failure screen
         showTransactionFailed();
     }
 }
-
 
 function showRandomResult() {
     const resultImage = document.getElementById('resultImage');
@@ -528,32 +522,24 @@ function showRandomResult() {
     // Random chance to win (you can adjust the probability)
     const isWinner = Math.random() < 0.3; // 30% chance to win
     
-if (isWinner) {
-    // Winner outcomes
-    const winningImages = [
-        'https://raw.githubusercontent.com/Onixs50/onixia-game/main/nft.png',
-        'https://raw.githubusercontent.com/Onixs50/onixia-game/main/token.png'
-    ];
-    const randomWinningImage = winningImages[Math.floor(Math.random() * winningImages.length)];
-    resultImage.src = randomWinningImage;
-    
-    if (randomWinningImage.includes('nft.png')) {
-        resultText.textContent = 'Congratulations! You won an NFT! 🎉';
+    if (isWinner) {
+        // Winner outcomes
+        const winningImages = ['https://raw.githubusercontent.com/Onixs50/onixia-game/main/nft.png', 'https://raw.githubusercontent.com/Onixs50/onixia-game/main/token.png'];
+        const randomWinningImage = winningImages[Math.floor(Math.random() * winningImages.length)];
+        resultImage.src = `http://5.83.147.121/${randomWinningImage}`;
+        
+        if (randomWinningImage === 'https://raw.githubusercontent.com/Onixs50/onixia-game/main/nft.png') {
+            resultText.textContent = 'Congratulations! You won an NFT! 🎉';
+        } else {
+            resultText.textContent = 'Congratulations! You won tokens! 💰';
+        }
     } else {
-        resultText.textContent = 'Congratulations! You won tokens! 💰';
+        // New losing outcomes
+        const losingImages = ['https://raw.githubusercontent.com/Onixs50/onixia-game/main/win1.png', 'https://raw.githubusercontent.com/Onixs50/onixia-game/main/win2.png', 'https://raw.githubusercontent.com/Onixs50/onixia-game/main/win3.png', 'https://raw.githubusercontent.com/Onixs50/onixia-game/main/win4.png'];
+        const randomLosingImage = losingImages[Math.floor(Math.random() * losingImages.length)];
+        resultImage.src = `http://5.83.147.121/${randomLosingImage}`;
+        resultText.textContent = 'Unfortunately, you didn\'t win this time. Better luck next try! 😢';
     }
-} else {
-    // New losing outcomes
-    const losingImages = [
-        'https://raw.githubusercontent.com/Onixs50/onixia-game/main/win1.png',
-        'https://raw.githubusercontent.com/Onixs50/onixia-game/main/win2.png',
-        'https://raw.githubusercontent.com/Onixs50/onixia-game/main/win3.png',
-        'https://raw.githubusercontent.com/Onixs50/onixia-game/main/win4.png'
-    ];
-    const randomLosingImage = losingImages[Math.floor(Math.random() * losingImages.length)];
-    resultImage.src = randomLosingImage;
-    resultText.textContent = 'Unfortunately, you didn\'t win this time. Better luck next try! 😢';
-}
     
     document.getElementById('resultModal').style.display = 'flex';
 }
